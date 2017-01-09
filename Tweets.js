@@ -35,7 +35,8 @@ for(var i = 0; i < docs.length; i++){
     vidpath : '',
     mongo_id : null,
     inreply_id : '',
-    atuser : ''
+    atuser : '',
+    mentions : []
   }
 
 setFields(tdata, docs[i], i);
@@ -76,7 +77,14 @@ function setFields(tdata, doc, i){
 tdata.type = doc.extended_entities.media[0].type;
 tdata.inreply_id  = doc.id_str; 
 tdata.atuser = '@'+doc.user.screen_name;
+tdata.mentions = doc.entities.user_mentions;
 tdata.mongo_id = doc._id;
+
+tdata.mentions.forEach((el, i)=>{
+  if(el.screen_name === 'Sound_Pic'){   
+    tdata.mentions.splice(i,1);
+  } 
+});
 
 if(tdata.type === 'photo'){
      tdata.pathname = path.join(__dirname, '/media/img'+i+'.jpg'); 

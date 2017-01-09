@@ -40,8 +40,13 @@ var upload = function(T, tdata, cb){
 T.postMediaChunked({ file_path: tdata.vidpath }, (err, data)=> {
  
   var mediaid = data.media_id_string;
- 
-  var tweettext = tdata.atuser+' Here is your sound pic';
+  
+  var mentions = '';
+  for(var i = 0; i < tdata.mentions.length; i++){
+    mentions += ' @'+tdata.mentions[i].screen_name ;
+  }
+
+  var tweettext = tdata.atuser+mentions+' Here is your sound pic';
   
   var opts = {status : tweettext, media_ids : mediaid, in_reply_to_status_id : tdata.inreply_id};
   
