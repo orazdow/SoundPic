@@ -47,7 +47,7 @@ mediaproc.download(tdata.mediaurl, tdata.pathname, tdata, (imgpath, tdata1)=>{
   console.log(imgpath);
 
    mediaproc.makeVid(imgpath, tdata1, (vidpath, tdata2)=>{
-    tdata2.vidpath = vidpath;
+   tdata2.vidpath = vidpath;
 
      mediaproc.upload(T, tdata2, (data, id)=>{
    
