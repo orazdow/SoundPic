@@ -14,8 +14,8 @@ Mongoclient.connect(url, mongoConnect);
 function runApp(collection){
     console.log('running');
  
-	Tweets.pushTweets(T, getParams, collection);
-	Tweets.getMedia(T, collection);
+    Tweets.pushTweets(T, getParams, collection);
+    Tweets.getMedia(T, collection);
    
     setTimeout(()=>{
 	 runApp(collection);	
