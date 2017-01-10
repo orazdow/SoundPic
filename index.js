@@ -30,7 +30,7 @@ function mongoConnect(err, db){
 }
     else{  
 	console.log('...'); 
-	collection = db.collection('tweets');
+	var collection = db.collection('tweets');
 	collection.createIndex({ "id" : 1 }, { unique : true });
 
     runApp(collection);
