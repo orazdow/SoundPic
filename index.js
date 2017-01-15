@@ -5,8 +5,8 @@ const Mongoclient = require('mongodb').MongoClient;
 
 const T = new Twit(config);
 const url = "mongodb://localhost:27017/twitterbot";
-const getParams = {  q: '@Sound_Pic', count: 20 };
-const interval = 1000 * 60 * 1;
+const getParams = {  q: '@Sound_Pic', count: 10 };
+const interval = 1000 * 40;
 
 
 Mongoclient.connect(url, mongoConnect);
@@ -14,8 +14,10 @@ Mongoclient.connect(url, mongoConnect);
 function runApp(collection){
     console.log('running');
  
-    Tweets.pushTweets(T, getParams, collection);
+    Tweets.pushTweets(T, getParams, collection, ()=>{
     Tweets.getMedia(T, collection);
+    });
+    
    
     setTimeout(()=>{
 	 runApp(collection);	

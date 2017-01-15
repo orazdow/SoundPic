@@ -1,6 +1,7 @@
 const fs = require('fs');
 const spawn = require('child_process').spawn;
 const https = require('https');
+const ObjectId = require('mongodb').ObjectID;
 
 
 var download = function(url, fname, tdata, cb) {
@@ -22,8 +23,8 @@ try{
 const proc = spawn('java -jar imgtovid.jar', [fname, outpath], {cwd: './media', shell: true}); 
 proc.on('exit', ()=>{
 
-	console.log('video processed');
-	cb(outpath, tdata);
+  tdata.vidpath = outpath;
+	cb(tdata);
 });
 }
 catch(err){
@@ -66,9 +67,18 @@ T.postMediaChunked({ file_path: tdata.vidpath }, (err, data)=> {
 
 }
 
+var update = function(collection, tdata, cb){
+collection.update({ "_id" : ObjectId(tdata.mongo_id) },  
+{$set : {"vidhandled": true }}, {upsert:false}, (err, res)=>{
+     cb(tdata.mongo_id);
+});
+
+}
+
 
 module.exports = {
 	download : download,
 	makeVid : makeVid,
-  upload : upload
+  upload : upload,
+  update : update
 }

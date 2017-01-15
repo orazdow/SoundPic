@@ -1,9 +1,10 @@
 const mediaproc = require('./tweetmedia');
 const path = require('path');
 const ObjectId = require('mongodb').ObjectID;
+const bypass = false;
 
 
-function pushTweets(T, params, collection){
+function pushTweets(T, params, collection, cb){
 T.get('search/tweets', params,(err, data, response)=>{
 
 var tweets = data.statuses;
@@ -12,6 +13,8 @@ collection.insert(tweets, { ordered: false })
  .catch(function(err) {
   //catch fails on duplicates.
  });
+
+cb();
 
 });
 
@@ -25,7 +28,7 @@ collection.find(opts).toArray(function(err, docs){
 if(err){console.log(err); return;}
 
 console.log(docs.length);
-
+//while(false){
 for(var i = 0; i < docs.length; i++){
   
   var tdata = {
@@ -43,17 +46,19 @@ setFields(tdata, docs[i], i);
 
 if(tdata.type === 'photo'){
 
+if(!bypass){
+
 mediaproc.download(tdata.mediaurl, tdata.pathname, tdata, (imgpath, tdata1)=>{
   console.log(imgpath);
 
-   mediaproc.makeVid(imgpath, tdata1, (vidpath, tdata2)=>{
-   tdata2.vidpath = vidpath;
+   mediaproc.makeVid(imgpath, tdata1, (tdata2)=>{
+   console.log('video processed');
 
      mediaproc.upload(T, tdata2, (data, id)=>{
    
-     collection.update({ "_id" : ObjectId(id) }, 
-      {$set : {"vidhandled": true }}, {upsert:false});
-       console.log('done:',data.text, id);
+          mediaproc.update(collection, tdata2,(res)=>{
+             console.log('done:', data.text, res);
+          });
 
      })
     
@@ -62,7 +67,11 @@ mediaproc.download(tdata.mediaurl, tdata.pathname, tdata, (imgpath, tdata1)=>{
 
 
 });
-
+}else{
+  mediaproc.update(collection, tdata, (res)=>{
+        console.log('bypassing:', res); 
+  });
+}
 
     }
 
