@@ -52,15 +52,15 @@ mediaproc.download(tdata.mediaurl, tdata.pathname, tdata, (imgpath, tdata1)=>{
   console.log(imgpath);
 
    mediaproc.makeVid(imgpath, tdata1, (tdata2)=>{
-   console.log('video processed');
+    console.log('video processed');
 
-     mediaproc.upload(T, tdata2, (data, id)=>{
+      mediaproc.upload(T, tdata2, (data, id)=>{
    
           mediaproc.update(collection, tdata2,(res)=>{
              console.log('done:', data.text, res);
           });
 
-     })
+      });
     
 	
   });
