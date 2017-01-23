@@ -1,6 +1,6 @@
 const mediaproc = require('./tweetmedia');
 const path = require('path');
-const bypass = false;
+const bypass = true;
 
 
 function pushTweets(T, params, collection, cb){
@@ -21,7 +21,9 @@ cb();
 
 
 function getMedia(T, collection){
-var opts = { 'entities.media.media_url': { $exists: true }, 'vidhandled' : { $exists: false } };
+//var opts = { 'entities.media.media_url': { $exists: true }, 'vidhandled' : { $exists: false } };
+var opts = { 'vidhandled' : { $exists: false } };
+
 collection.find(opts).toArray(function(err, docs){
 
 if(err){console.log(err); return;}
@@ -38,12 +40,13 @@ for(var i = 0; i < docs.length; i++){
     mongo_id : null,
     inreply_id : '',
     atuser : '',
-    mentions : []
+    mentions : [],
+    args: []
   }
 
-setFields(tdata, docs[i], i);
-
-if(tdata.type === 'photo'){
+//setFields(tdata, docs[i], i);
+if(true){
+//if(tdata.type === 'photo'){
 
 if(!bypass){
 
@@ -67,9 +70,11 @@ mediaproc.download(tdata.mediaurl, tdata.pathname, tdata, (imgpath, tdata1)=>{
 
 });
 }else{
-  mediaproc.update(collection, tdata, (res)=>{
-        console.log('bypassing:', res); 
-  });
+
+	console.dir(tdata);
+  // mediaproc.update(collection, tdata, (res)=>{
+  //       console.log('bypassing:', res); 
+  // });
 }
 
     }
@@ -87,6 +92,7 @@ tdata.inreply_id  = doc.id_str;
 tdata.atuser = '@'+doc.user.screen_name;
 tdata.mentions = doc.entities.user_mentions;
 tdata.mongo_id = doc._id;
+tdata.args = getArgs(doc.text);
 
 tdata.mentions.forEach((el, i)=>{
   if(el.screen_name === 'Sound_Pic'){   
@@ -110,6 +116,21 @@ if(tdata.type === 'photo'){
     console.log('error');
     process.exit(1);
   }
+
+function getArgs(text){
+    var args = [];
+	var str = text.toLowerCase();
+	if(str.includes(' -i ')){
+		args.push('-i');
+	}
+	if(str.includes(' -s ')){
+		args.push('-s');
+	}
+	if(str.includes(' -a ')){
+		args.push('-a');
+	}
+	return args;
+}
 
 function midBitrateIndex(arr){ 
    for (var i = 0; i < arr.length; i++) {
