@@ -6,7 +6,7 @@ const Mongoclient = require('mongodb').MongoClient;
 const T = new Twit(config);
 const url = "mongodb://localhost:27017/twitterbot";
 const getParams = {  q: '@Sound_Pic', count: 10 };
-const interval = 1000 * 40;
+const interval = 1000 * 30;
 
 
 Mongoclient.connect(url, mongoConnect);

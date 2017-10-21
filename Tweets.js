@@ -6,7 +6,7 @@ const bypass = false;
 function pushTweets(T, params, collection, cb){
 T.get('search/tweets', params,(err, data, response)=>{
 
-var tweets = data.statuses;
+var tweets = data.statuses; 
 collection.insert(tweets, { ordered: false })
 
  .catch(function(err) {
@@ -21,7 +21,8 @@ cb();
 
 
 function getMedia(T, collection){
-var opts = { 'entities.media.media_url': { $exists: true }, 'vidhandled' : { $exists: false } };
+var opts = { 'vidhandled' : { $exists: false }, $or: [ {'entities.media.media_url': { $exists: true }} , {'quoted_status.entities.media.media_url': { $exists: true }} ]};
+
 collection.find(opts).toArray(function(err, docs){
 
 if(err){console.log(err); return;}
@@ -41,7 +42,9 @@ for(var i = 0; i < docs.length; i++){
     mentions : []
   }
 
-setFields(tdata, docs[i], i);
+  let quote = (docs[i].is_quote_status == true);
+  setFields(tdata, docs[i], i, quote); 
+
 
 if(tdata.type === 'photo'){
 
@@ -80,13 +83,22 @@ mediaproc.download(tdata.mediaurl, tdata.pathname, tdata, (imgpath, tdata1)=>{
 
 
 
-function setFields(tdata, doc, i){
+function setFields(tdata, doc, i, quote){
 
-tdata.type = doc.extended_entities.media[0].type;
+ var qdoc = doc; 
+ if(quote){
+  qdoc = doc.quoted_status;
+ }
+
+tdata.type = qdoc.extended_entities.media[0].type;
 tdata.inreply_id  = doc.id_str; 
 tdata.atuser = '@'+doc.user.screen_name;
 tdata.mentions = doc.entities.user_mentions;
 tdata.mongo_id = doc._id;
+
+if(quote){
+  tdata.mentions.push({'screen_name': qdoc.user.screen_name});
+}
 
 tdata.mentions.forEach((el, i)=>{
   if(el.screen_name === 'Sound_Pic'){   
@@ -94,17 +106,20 @@ tdata.mentions.forEach((el, i)=>{
   } 
 });
 
+
+
 if(tdata.type === 'photo'){
      tdata.pathname = path.join(__dirname, '/media/img'+i+'.jpg'); 
-     tdata.mediaurl = doc.entities.media[0].media_url_https;
+     tdata.mediaurl = qdoc.entities.media[0].media_url_https;
+     
   }else if(tdata.type === 'video'){
      tdata.pathname = path.join(__dirname, '/media/vid'+i+'.mp4'); 
-     var bestindex = midBitrateIndex(doc.extended_entities.media[0].video_info.variants);
-      tdata.mediaurl = doc.extended_entities.media[0].video_info.variants[bestindex].url;
+     var bestindex = midBitrateIndex(qdoc.extended_entities.media[0].video_info.variants);
+      tdata.mediaurl = qdoc.extended_entities.media[0].video_info.variants[bestindex].url;
      }else if(tdata.type === 'animated_gif'){
       //handle gifs as photos for now
         tdata.pathname = path.join(__dirname, '/media/img'+i+'.jpg'); 
-        tdata.mediaurl = doc.entities.media[0].media_url_https;
+        tdata.mediaurl = qdoc.entities.media[0].media_url_https;
      }
    else{
     console.log('error');

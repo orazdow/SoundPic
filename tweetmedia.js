@@ -36,7 +36,7 @@ console.log(err);
 
 
 var upload = function(T, tdata, cb){
- console.log('uploading: '+ tdata.vidpath);
+ console.log('uploading: '+ tdata.vidpath); 
 
 T.postMediaChunked({ file_path: tdata.vidpath }, (err, data)=> {
  
